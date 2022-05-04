@@ -1,32 +1,34 @@
 package com.kintsugi.uploadcsv;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.File;
 
-import software.amazon.awssdk.awscore.exception.AwsServiceException;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 public class S3Util {
 
     private static final String BUCKET = "bucket-group-7";
     
-    public static void uploadFile(String fileName, InputStream inputStream) throws S3Exception, AwsServiceException, SdkClientException, IOException {
+    
+    
+    public static void sendPath(String file_path, String bucket_name, String key_name) {
+        
+        System.out.println(("Uploading {} to S3 bucket {}...\n"));
 
-        S3Client client = S3Client.builder().build();
-
-        PutObjectRequest request = PutObjectRequest.builder()
-                                                   .bucket(BUCKET)
-                                                   .key(fileName)
-                                                   .acl("public-read")
-                                                   .build();
-
-        client.putObject(request, RequestBody.fromInputStream(inputStream, inputStream.available()));
-
+        final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
+        
+        try {
+            s3.putObject(bucket_name, key_name, new File(file_path));
+        } catch (AmazonServiceException e) {
+            System.out.println(e.getMessage());
+            //System.exit(1);
+        }
 
     }
 
+    public static void main (String args[]){
+        sendPath("/Users/carolina.marques/Desktop/print.png", "bucket-group-7", "file");
+    }
 }
