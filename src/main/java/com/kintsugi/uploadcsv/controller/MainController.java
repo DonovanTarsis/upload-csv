@@ -15,18 +15,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kintsugi.uploadcsv.service.KafkaService;
 import com.kintsugi.uploadcsv.utils.S3Util;
+
 @Controller
 public class MainController {
-	    
+
     @GetMapping("")
     public String showHomePage() {
         return "upload";
     }
-	
+
     @PostMapping("/upload")
     public String uploadFile(String description, @RequestParam("file") MultipartFile multipart, Model model) {
-        
+
         String fileName = multipart.getOriginalFilename();
 
         System.out.println("Descrição: " + description);
@@ -36,6 +38,7 @@ public class MainController {
         try {
             S3Util.uploadFile(fileName, multipart.getInputStream());
             message = "Seu arquivo foi carregado com sucesso!";
+            KafkaService.producer(fileName);
         } catch (Exception ex) {
             message = "Erro ao carregar aquivo: " + ex.getMessage();
         }
@@ -44,5 +47,3 @@ public class MainController {
         return "message";
     }
 }
-
-
